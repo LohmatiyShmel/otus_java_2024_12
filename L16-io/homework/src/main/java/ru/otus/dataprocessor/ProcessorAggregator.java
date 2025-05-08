@@ -1,8 +1,8 @@
 package ru.otus.dataprocessor;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import ru.otus.model.Measurement;
 
 public class ProcessorAggregator implements Processor {
@@ -13,14 +13,7 @@ public class ProcessorAggregator implements Processor {
         if (data.isEmpty()) {
             throw new FileProcessException("Dataset is empty");
         }
-        final Map<String, Double> summedValues = new HashMap<>();
-        for (Measurement measurement : data) {
-            if (summedValues.get(measurement.name()) != null) {
-                summedValues.put(measurement.name(), summedValues.get(measurement.name()) + measurement.value());
-                continue;
-            }
-            summedValues.put(measurement.name(), measurement.value());
-        }
-        return summedValues;
+        return data.stream()
+                .collect(Collectors.groupingBy(Measurement::name, Collectors.summingDouble(Measurement::value)));
     }
 }
