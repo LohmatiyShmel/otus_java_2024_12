@@ -2,7 +2,11 @@ package ru.otus;
 
 import ru.otus.appcontainer.AppComponentsContainerImpl;
 import ru.otus.appcontainer.api.AppComponentsContainer;
-import ru.otus.config.AppConfig;
+// import ru.otus.config.AppConfig;
+import ru.otus.config.EquationPreparerConfig;
+import ru.otus.config.GameProcessorConfig;
+import ru.otus.config.IOServiceConfig;
+import ru.otus.config.PlayerServiceConfig;
 import ru.otus.services.GameProcessor;
 
 /*
@@ -30,7 +34,11 @@ public class App {
         // AppComponentsContainer container = new AppComponentsContainerImpl("ru.otus.config");
 
         // Обязательный вариант
-        AppComponentsContainer container = new AppComponentsContainerImpl(AppConfig.class);
+        AppComponentsContainer container = new AppComponentsContainerImpl(
+                IOServiceConfig.class,
+                EquationPreparerConfig.class,
+                PlayerServiceConfig.class,
+                GameProcessorConfig.class);
 
         // Приложение должно работать в каждом из указанных ниже вариантов
         GameProcessor gameProcessor = container.getAppComponent(GameProcessor.class);
