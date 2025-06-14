@@ -44,6 +44,15 @@ public class DbServiceClientImpl implements DBServiceClient {
     }
 
     @Override
+    public Optional<List<Client>> getClient(String name) {
+        return transactionManager.doInReadOnlyTransaction(session -> {
+            var clientOptional = clientDataTemplate.findByEntityField(session, "name", name);
+            log.info("client: {}", clientOptional);
+            return Optional.ofNullable(clientOptional);
+        });
+    }
+
+    @Override
     public List<Client> findAll() {
         return transactionManager.doInReadOnlyTransaction(session -> {
             var clientList = clientDataTemplate.findAll(session);

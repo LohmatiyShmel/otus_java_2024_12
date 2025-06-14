@@ -6,23 +6,26 @@ import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import ru.otus.dao.ClientDao;
 import ru.otus.dao.UserDao;
 import ru.otus.helpers.FileSystemHelper;
 import ru.otus.services.TemplateProcessor;
-import ru.otus.servlet.UsersApiServlet;
-import ru.otus.servlet.UsersServlet;
+import ru.otus.servlet.*;
 
 public class UsersWebServerSimple implements UsersWebServer {
     private static final String START_PAGE_NAME = "index.html";
     private static final String COMMON_RESOURCES_DIR = "static";
 
     private final UserDao userDao;
+    private final ClientDao clientDao;
     private final Gson gson;
     protected final TemplateProcessor templateProcessor;
     private final Server server;
 
-    public UsersWebServerSimple(int port, UserDao userDao, Gson gson, TemplateProcessor templateProcessor) {
+    public UsersWebServerSimple(
+            int port, UserDao userDao, ClientDao clientDao, Gson gson, TemplateProcessor templateProcessor) {
         this.userDao = userDao;
+        this.clientDao = clientDao;
         this.gson = gson;
         this.templateProcessor = templateProcessor;
         server = new Server(port);
@@ -51,9 +54,12 @@ public class UsersWebServerSimple implements UsersWebServer {
         ResourceHandler resourceHandler = createResourceHandler();
         ServletContextHandler servletContextHandler = createServletContextHandler();
 
+        servletContextHandler.setDefaultResponseCharacterEncoding("UTF-8");
+        servletContextHandler.setDefaultRequestCharacterEncoding("UTF-8");
+
         Handler.Sequence sequence = new Handler.Sequence();
         sequence.addHandler(resourceHandler);
-        sequence.addHandler(applySecurity(servletContextHandler, "/users", "/api/user/*"));
+        sequence.addHandler(applySecurity(servletContextHandler, "/users", "/api/user/*", "/clients"));
 
         server.setHandler(sequence);
     }
@@ -76,6 +82,12 @@ public class UsersWebServerSimple implements UsersWebServer {
         ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         servletContextHandler.addServlet(new ServletHolder(new UsersServlet(templateProcessor, userDao)), "/users");
         servletContextHandler.addServlet(new ServletHolder(new UsersApiServlet(userDao, gson)), "/api/user/*");
+        servletContextHandler.addServlet(new ServletHolder(new ClientServlet(templateProcessor)), "/clients");
+        servletContextHandler.addServlet(new ServletHolder(new ClientCreateServlet(clientDao)), "/api/client");
+        servletContextHandler.addServlet(
+                new ServletHolder(new ClientSearchByIdApiServlet(clientDao, gson)), "/api/client/search/id/*");
+        servletContextHandler.addServlet(
+                new ServletHolder(new ClientSearchByNameApiServlet(clientDao, gson)), "/api/client/search/name/");
         return servletContextHandler;
     }
 }
