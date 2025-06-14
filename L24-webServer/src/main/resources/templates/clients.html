@@ -1,0 +1,114 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Клиенты</title>
+    <script>
+        // Функция создания клиента
+        function createClient() {
+            const name = document.getElementById('nameInput').value;
+            const street = document.getElementById('streetInput').value;
+            const phones = Array.from(document.querySelectorAll('.phoneInput'))
+                .map(input => input.value)
+                .filter(phone => phone.trim() !== '');
+
+            const data = { name, street, phones };
+
+            fetch('api/client', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP error! status: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    const container = document.getElementById('createClientResult');
+                    if (result.status === "success") {
+                        container.innerHTML = '<pre>' + JSON.stringify(result.client, null, 2) + '</pre>';
+                    } else {
+                        container.innerHTML = '<pre style="color:red">' + result.message + '</pre>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    document.getElementById('createClientResult').innerHTML =
+                        '<pre style="color:red">Ошибка: ' + error.message + '</pre>';
+                });
+        }
+
+        // Функция поиска по ID
+        function findClientById() {
+            const id = document.getElementById('findByIdInput').value;
+            fetch('api/client/search/id/' + id)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка ' + response.status + ': ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(client => {
+                    document.getElementById('clientByIdDataContainer').innerHTML =
+                        '<pre>' + JSON.stringify(client, null, 2) + '</pre>';
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    document.getElementById('clientByIdDataContainer').innerHTML =
+                        '<pre style="color:red">' + error.message + '</pre>';
+                });
+        }
+
+        function findClientByName() {
+            const name = document.getElementById('findByNameInput').value;
+            fetch('api/client/search/name/?name=' + encodeURIComponent(name))
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка ' + response.status + ': ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(clients => {
+                    document.getElementById('clientByNameDataContainer').innerHTML =
+                        '<pre>' + JSON.stringify(clients, null, 2) + '</pre>';
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    document.getElementById('clientByNameDataContainer').innerHTML =
+                        '<pre style="color:red">' + error.message + '</pre>';
+                });
+        }
+
+        function addPhoneField() {
+            const container = document.getElementById('phonesContainer');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'phoneInput';
+            input.placeholder = 'Телефон';
+            container.appendChild(input);
+        }
+    </script>
+</head>
+<body>
+<h4>Создание клиента</h4>
+<input type="text" id="nameInput" placeholder="Имя">
+<input type="text" id="streetInput" placeholder="Адрес">
+<div id="phonesContainer">
+    <input type="text" class="phoneInput" placeholder="Телефон">
+</div>
+<button onclick="addPhoneField()">+ Телефон</button>
+<button onclick="createClient()">Отправить</button>
+<div id="createClientResult"></div>
+
+<h4>Поиск клиента по id</h4>
+<input type="text" id="findByIdInput" placeholder="Id клиента">
+<button onclick="findClientById()">Найти</button>
+<div id="clientByIdDataContainer"></div>
+
+<h4>Поиск клиента по имени</h4>
+<input type="text" id="findByNameInput" placeholder="Имя клиента">
+<button onclick="findClientByName()">Найти</button>
+<div id="clientByNameDataContainer"></div>
+</body>
+</html>

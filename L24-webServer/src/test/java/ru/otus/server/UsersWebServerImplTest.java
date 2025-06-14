@@ -17,6 +17,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ru.otus.dao.ClientDao;
 import ru.otus.dao.UserDao;
 import ru.otus.model.User;
 import ru.otus.services.TemplateProcessor;
@@ -42,11 +43,12 @@ class UsersWebServerImplTest {
 
         TemplateProcessor templateProcessor = mock(TemplateProcessor.class);
         UserDao userDao = mock(UserDao.class);
+        ClientDao clientDao = mock(ClientDao.class);
 
         given(userDao.findById(DEFAULT_USER_ID)).willReturn(Optional.of(DEFAULT_USER));
 
         gson = new GsonBuilder().serializeNulls().create();
-        webServer = new UsersWebServerSimple(WEB_SERVER_PORT, userDao, gson, templateProcessor);
+        webServer = new UsersWebServerSimple(WEB_SERVER_PORT, userDao, clientDao, gson, templateProcessor);
         webServer.start();
     }
 

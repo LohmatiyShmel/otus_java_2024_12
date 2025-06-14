@@ -32,7 +32,15 @@ public class AuthorizationFilter implements Filter {
 
         HttpSession session = request.getSession(false);
 
-        if (session == null) {
+        if (uri.equals("/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (session == null || session.getAttribute("user") == null) {
+            session = request.getSession(true);
+            session.setAttribute("requestedURI", uri);
+
             response.sendRedirect("/login");
         } else {
             filterChain.doFilter(servletRequest, servletResponse);

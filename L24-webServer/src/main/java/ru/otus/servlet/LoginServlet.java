@@ -37,16 +37,26 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         String name = request.getParameter(PARAM_LOGIN);
         String password = request.getParameter(PARAM_PASSWORD);
 
         if (userAuthService.authenticate(name, password)) {
             HttpSession session = request.getSession();
             session.setMaxInactiveInterval(MAX_INACTIVE_INTERVAL);
-            response.sendRedirect("/users");
+            session.setAttribute("user", name);
+
+            String requestedURI = (String) session.getAttribute("requestedURI");
+
+            session.removeAttribute("requestedURI");
+
+            if (requestedURI != null && !requestedURI.isEmpty()) {
+                response.sendRedirect(requestedURI);
+            } else {
+                response.sendRedirect("/users");
+            }
         } else {
             response.setStatus(SC_UNAUTHORIZED);
+            response.getWriter().println("Неверные учетные данные");
         }
     }
 }
