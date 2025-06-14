@@ -3,6 +3,7 @@ package ru.otus.crm.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.otus.base.AbstractHibernateTest;
@@ -58,4 +59,30 @@ class DbServiceClientTest extends AbstractHibernateTest {
         assertThat(clientList).hasSize(1);
         assertThat(clientList.get(0)).usingRecursiveComparison().isEqualTo(loadedClient.get());
     }
+
+    @Test
+    @DisplayName("Кэш должен работать быстрее СУБД")
+    void cachePerformanceTest() {
+        Client client = new Client(
+                null, "CachePerfClient", new Address(null, "CacheStreet"), List.of(new Phone(null, "123-456")));
+
+        // Сохраняем клиента
+        Client savedClient = dbServiceClient.saveClient(client);
+        Long id = savedClient.getId();
+
+        // Первый вызов - загрузка из БД
+        long startDb = System.nanoTime();
+        Optional<Client> dbResult = dbServiceClient.getClient(id);
+        long dbDuration = System.nanoTime() - startDb;
+
+        // Второй вызов - из кэша
+        long startCache = System.nanoTime();
+        Optional<Client> cacheResult = dbServiceClient.getClient(id);
+        long cacheDuration = System.nanoTime() - startCache;
+
+        assertThat(dbResult).isPresent();
+        assertThat(cacheResult).isPresent();
+        assertThat(cacheDuration).isLessThan(dbDuration);
+    }
+
 }
