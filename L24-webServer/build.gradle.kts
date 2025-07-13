@@ -1,18 +1,20 @@
+plugins {
+    id ("org.springframework.boot")
+}
+
 dependencies {
-    implementation(project(":L21-jpql:homework-template"))
     implementation("ch.qos.logback:logback-classic")
     implementation("com.google.code.gson:gson")
-    implementation("com.fasterxml.jackson.core:jackson-databind")
-    implementation("org.hibernate.orm:hibernate-core")
 
-    implementation("org.eclipse.jetty.ee10:jetty-ee10-servlet")
-    implementation("org.eclipse.jetty:jetty-server")
-    implementation("org.eclipse.jetty.ee10:jetty-ee10-webapp")
-    implementation("org.eclipse.jetty:jetty-security")
-    implementation("org.eclipse.jetty:jetty-http")
-    implementation("org.eclipse.jetty:jetty-io")
-    implementation("org.eclipse.jetty:jetty-util")
-    implementation("org.freemarker:freemarker")
+    implementation ("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation ("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation ("org.springframework.boot:spring-boot-starter-web:3.5.3")
+    implementation ("org.flywaydb:flyway-core")
+    implementation ("org.postgresql:postgresql")
+
+    runtimeOnly("org.flywaydb:flyway-database-postgresql")
+    compileOnly ("org.projectlombok:lombok")
+    annotationProcessor ("org.projectlombok:lombok")
 
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.junit.jupiter:junit-jupiter-params")

@@ -5,12 +5,10 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 import ru.otus.crm.model.Client;
 import ru.otus.crm.repository.ClientRepository;
 import ru.otus.sessionmanager.TransactionManager;
 
-@Service
 public class DbServiceClientImpl implements DBServiceClient {
     private static final Logger log = LoggerFactory.getLogger(DbServiceClientImpl.class);
 
