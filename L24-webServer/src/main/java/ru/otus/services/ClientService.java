@@ -26,7 +26,6 @@ public class ClientService {
 
     @Transactional
     public void createClient(ClientCreateDto dto) {
-        // Сохраняем адрес, если указан
         Address address = null;
         if (dto.getStreet() != null && !dto.getStreet().isEmpty()) {
             address = new Address();
@@ -34,7 +33,6 @@ public class ClientService {
             address = addressRepo.save(address);
         }
 
-        // Создаем клиента
         Client client = new Client();
         client.setName(dto.getName());
         if (address != null) {
@@ -42,7 +40,6 @@ public class ClientService {
         }
         Client savedClient = clientRepo.save(client);
 
-        // Сохраняем телефоны, если указаны
         if (dto.getPhones() != null && !dto.getPhones().trim().isEmpty()) {
             Set<Phone> phones = Arrays.stream(dto.getPhones().split(","))
                     .map(String::trim)
