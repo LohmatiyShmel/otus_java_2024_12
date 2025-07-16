@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Clients Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .form-container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .actions {
+            white-space: nowrap;
+        }
+        .actions a {
+            margin-right: 10px;
+            color: #2196F3;
+            text-decoration: none;
+        }
+        .actions a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<h1>Система менеджмента клиентов</h1>
+
+<div class="form-container">
+    <h2>Добавить нового клиента</h2>
+    <form th:action="@{/clients}" th:object="${newClient}" method="post">
+        <div class="form-group">
+            <label for="name">Имя:</label>
+            <input type="text" id="name" th:field="*{name}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="street">Адрес:</label>
+            <input type="text" id="street" name="street" />
+        </div>
+
+        <div class="form-group">
+            <label for="phones">Номера телефона (разделение запятой):</label>
+            <input type="text" id="phones" name="phones" placeholder="+79001234567, +79007654321" />
+        </div>
+
+        <button type="submit">Добавить клиента</button>
+    </form>
+</div>
+
+<h2>Список клиентов</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Имя</th>
+        <th>Адрес</th>
+        <th>Номера телефонов</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="client : ${clients}">
+        <td th:text="${client.id}"></td>
+        <td th:text="${client.name}"></td>
+        <td>
+                    <span th:if="${client.address != null}"
+                          th:text="${client.address.street}"></span>
+            <span th:if="${client.address == null}">-</span>
+        </td>
+        <td>
+                    <span th:each="phone : ${client.phones}"
+                          th:text="${phone.number} + (${phoneStat.last} ? '' : ', ')">
+                    </span>
+            <span th:if="${client.phones == null || client.phones.isEmpty()}">-</span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

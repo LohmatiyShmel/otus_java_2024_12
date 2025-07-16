@@ -19,7 +19,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.otus.dao.UserDao;
 import ru.otus.model.User;
-import ru.otus.services.TemplateProcessor;
 
 @DisplayName("Тест сервера должен ")
 class UsersWebServerImplTest {
@@ -46,7 +45,6 @@ class UsersWebServerImplTest {
         given(userDao.findById(DEFAULT_USER_ID)).willReturn(Optional.of(DEFAULT_USER));
 
         gson = new GsonBuilder().serializeNulls().create();
-        webServer = new UsersWebServerSimple(WEB_SERVER_PORT, userDao, gson, templateProcessor);
         webServer.start();
     }
 
