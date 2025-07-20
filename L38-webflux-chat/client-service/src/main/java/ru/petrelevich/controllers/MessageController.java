@@ -1,7 +1,9 @@
 package ru.petrelevich.controllers;
 
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,6 +12,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.util.HtmlUtils;
@@ -25,10 +29,21 @@ public class MessageController {
 
     private final WebClient datastoreClient;
     private final SimpMessagingTemplate template;
+    private final String allReadOnlyRoomId;
 
-    public MessageController(WebClient datastoreClient, SimpMessagingTemplate template) {
+    public MessageController(
+            WebClient datastoreClient,
+            SimpMessagingTemplate template,
+            @Value("${env.allReadOnlyRoomId}") String allReadOnlyRoomId) {
         this.datastoreClient = datastoreClient;
         this.template = template;
+        this.allReadOnlyRoomId = allReadOnlyRoomId;
+    }
+
+    @GetMapping("/config")
+    @ResponseBody
+    public Map<String, String> getConfig() {
+        return Map.of("allReadOnlyRoomId", allReadOnlyRoomId);
     }
 
     @MessageMapping("/message.{roomId}")
