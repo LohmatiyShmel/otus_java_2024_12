@@ -1,6 +1,6 @@
 package ru.petrelevich.service;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.time.temporal.ChronoUnit.MILLIS;
 
 import java.time.Duration;
 import org.slf4j.Logger;
@@ -32,6 +32,12 @@ public class DataStoreR2dbc implements DataStore {
     @Override
     public Flux<Message> loadMessages(String roomId) {
         log.info("loadMessages roomId:{}", roomId);
-        return messageRepository.findByRoomId(roomId).delayElements(Duration.of(3, SECONDS), workerPool);
+        return messageRepository.findByRoomId(roomId).delayElements(Duration.of(100, MILLIS), workerPool);
+    }
+
+    @Override
+    public Flux<Message> loadAllMessages(String roomId) {
+        log.info("loadAllMessages for room {}", roomId);
+        return messageRepository.findAll().delayElements(Duration.of(100, MILLIS), workerPool);
     }
 }

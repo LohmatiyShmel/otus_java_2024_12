@@ -26,7 +26,7 @@ public class AppConfig {
         return new ObjectMapper();
     }
 
-    @Bean(destroyMethod = "close")
+    @Bean(destroyMethod = "shutdownGracefully")
     public NioEventLoopGroup eventLoopGroup() {
         return new NioEventLoopGroup(THREAD_POOL_SIZE, new ThreadFactory() {
             private final AtomicLong threadIdGenerator = new AtomicLong(0);

@@ -21,6 +21,11 @@ const connect = () => {
         setConnected(true);
         const userName = frame.headers["user-name"];
         const roomId = document.getElementById(roomIdElementId).value;
+
+        document.getElementById(messageElementId).disabled = false;
+        document.getElementById("send").disabled = false;
+
+
         console.log(`Connected to roomId: ${roomId} frame:${frame}`);
         const topicName = `/topic/response.${roomId}`;
         const topicNameUser = `/user/${userName}${topicName}`;
@@ -40,6 +45,7 @@ const disconnect = () => {
 const sendMsg = () => {
     const roomId = document.getElementById(roomIdElementId).value;
     const message = document.getElementById(messageElementId).value;
+
     stompClient.send(`/app/message.${roomId}`, {}, JSON.stringify({'messageStr': message}))
 }
 

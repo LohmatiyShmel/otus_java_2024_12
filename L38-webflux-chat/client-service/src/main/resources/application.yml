@@ -3,3 +3,6 @@ server:
 
 datastore:
   url: http://localhost:8081
+
+env:
+  allReadOnlyRoomId: "1408"

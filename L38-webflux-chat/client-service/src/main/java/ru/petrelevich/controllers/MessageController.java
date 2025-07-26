@@ -1,7 +1,9 @@
 package ru.petrelevich.controllers;
 
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,6 +12,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.util.HtmlUtils;
@@ -25,10 +29,21 @@ public class MessageController {
 
     private final WebClient datastoreClient;
     private final SimpMessagingTemplate template;
+    private final String allReadOnlyRoomId;
 
-    public MessageController(WebClient datastoreClient, SimpMessagingTemplate template) {
+    public MessageController(
+            WebClient datastoreClient,
+            SimpMessagingTemplate template,
+            @Value("${env.allReadOnlyRoomId}") String allReadOnlyRoomId) {
         this.datastoreClient = datastoreClient;
         this.template = template;
+        this.allReadOnlyRoomId = allReadOnlyRoomId;
+    }
+
+    @GetMapping("/config")
+    @ResponseBody
+    public Map<String, String> getConfig() {
+        return Map.of("allReadOnlyRoomId", allReadOnlyRoomId);
     }
 
     @MessageMapping("/message.{roomId}")
@@ -75,18 +90,40 @@ public class MessageController {
     }
 
     private Mono<Long> saveMessage(String roomId, Message message) {
-        return datastoreClient
-                .post()
-                .uri(String.format("/msg/%s", roomId))
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(message)
-                .exchangeToMono(response -> response.bodyToMono(Long.class));
+        return allReadOnlyRoomId.equalsIgnoreCase(roomId)
+                ? Mono.error(new ChatException("Cannot send messages in this room"))
+                : datastoreClient
+                        .post()
+                        .uri(String.format("/msg/%s", roomId))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .bodyValue(message)
+                        .exchangeToMono(response -> response.bodyToMono(Long.class));
     }
 
     private Flux<Message> getMessagesByRoomId(long roomId) {
+        return allReadOnlyRoomId.equalsIgnoreCase(String.valueOf(roomId))
+                ? getAllMessagesForRoomId(roomId)
+                : getMessagesForRoomId(roomId);
+    }
+
+    private Flux<Message> getMessagesForRoomId(long roomId) {
         return datastoreClient
                 .get()
                 .uri(String.format("/msg/%s", roomId))
+                .accept(MediaType.APPLICATION_NDJSON)
+                .exchangeToFlux(response -> {
+                    if (response.statusCode().equals(HttpStatus.OK)) {
+                        return response.bodyToFlux(Message.class);
+                    } else {
+                        return response.createException().flatMapMany(Mono::error);
+                    }
+                });
+    }
+
+    private Flux<Message> getAllMessagesForRoomId(long roomId) {
+        return datastoreClient
+                .get()
+                .uri(String.format("/msg/all/%s", roomId))
                 .accept(MediaType.APPLICATION_NDJSON)
                 .exchangeToFlux(response -> {
                     if (response.statusCode().equals(HttpStatus.OK)) {
