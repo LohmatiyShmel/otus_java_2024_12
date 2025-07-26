@@ -90,18 +90,40 @@ public class MessageController {
     }
 
     private Mono<Long> saveMessage(String roomId, Message message) {
-        return datastoreClient
-                .post()
-                .uri(String.format("/msg/%s", roomId))
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(message)
-                .exchangeToMono(response -> response.bodyToMono(Long.class));
+        return allReadOnlyRoomId.equalsIgnoreCase(roomId)
+                ? Mono.error(new ChatException("Cannot send messages in this room"))
+                : datastoreClient
+                        .post()
+                        .uri(String.format("/msg/%s", roomId))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .bodyValue(message)
+                        .exchangeToMono(response -> response.bodyToMono(Long.class));
     }
 
     private Flux<Message> getMessagesByRoomId(long roomId) {
+        return allReadOnlyRoomId.equalsIgnoreCase(String.valueOf(roomId))
+                ? getAllMessagesForRoomId(roomId)
+                : getMessagesForRoomId(roomId);
+    }
+
+    private Flux<Message> getMessagesForRoomId(long roomId) {
         return datastoreClient
                 .get()
                 .uri(String.format("/msg/%s", roomId))
+                .accept(MediaType.APPLICATION_NDJSON)
+                .exchangeToFlux(response -> {
+                    if (response.statusCode().equals(HttpStatus.OK)) {
+                        return response.bodyToFlux(Message.class);
+                    } else {
+                        return response.createException().flatMapMany(Mono::error);
+                    }
+                });
+    }
+
+    private Flux<Message> getAllMessagesForRoomId(long roomId) {
+        return datastoreClient
+                .get()
+                .uri(String.format("/msg/all/%s", roomId))
                 .accept(MediaType.APPLICATION_NDJSON)
                 .exchangeToFlux(response -> {
                     if (response.statusCode().equals(HttpStatus.OK)) {

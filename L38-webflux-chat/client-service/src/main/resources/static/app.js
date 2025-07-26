@@ -1,25 +1,9 @@
 let stompClient = null;
-let allReadOnlyRoomId = null;
 
 const chatLineElementId = "chatLine";
 const roomIdElementId = "roomId";
 const messageElementId = "message";
 
-document.addEventListener("DOMContentLoaded", () => {
-    loadConfig().then(() => {
-    });
-});
-
-const loadConfig = async () => {
-    try {
-        const response = await fetch('/config');
-        const config = await response.json();
-        allReadOnlyRoomId = config.allReadOnlyRoomId;
-        console.log("Loaded allReadOnlyRoomId:", allReadOnlyRoomId);
-    } catch (error) {
-        console.error("Ошибка загрузки конфигурации:", error);
-    }
-}
 
 const setConnected = (connected) => {
     const connectBtn = document.getElementById("connect");
@@ -38,14 +22,9 @@ const connect = () => {
         const userName = frame.headers["user-name"];
         const roomId = document.getElementById(roomIdElementId).value;
 
-        if (roomId === allReadOnlyRoomId) {
-            alert(`Комната ${allReadOnlyRoomId} доступна только для чтения. Отправка сообщений запрещена.`);
-            document.getElementById(messageElementId).disabled = true;
-            document.getElementById("send").disabled = true;
-        } else {
-            document.getElementById(messageElementId).disabled = false;
-            document.getElementById("send").disabled = false;
-        }
+        document.getElementById(messageElementId).disabled = false;
+        document.getElementById("send").disabled = false;
+
 
         console.log(`Connected to roomId: ${roomId} frame:${frame}`);
         const topicName = `/topic/response.${roomId}`;
@@ -66,11 +45,6 @@ const disconnect = () => {
 const sendMsg = () => {
     const roomId = document.getElementById(roomIdElementId).value;
     const message = document.getElementById(messageElementId).value;
-
-    if (roomId === allReadOnlyRoomId) {
-        alert(`Отправка сообщений в комнату ${allReadOnlyRoomId} запрещена.`);
-        return;
-    }
 
     stompClient.send(`/app/message.${roomId}`, {}, JSON.stringify({'messageStr': message}))
 }

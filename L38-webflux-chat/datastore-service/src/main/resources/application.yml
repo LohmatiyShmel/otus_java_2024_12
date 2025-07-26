@@ -15,6 +15,3 @@ spring:
 logging:
   level:
     org.springframework.jdbc.core.JdbcTemplate: TRACE
-
-env:
-  allReadOnlyRoomId: "1408"

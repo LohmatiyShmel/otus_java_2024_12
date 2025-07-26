@@ -10,5 +10,5 @@ public interface DataStore {
 
     Flux<Message> loadMessages(String roomId);
 
-    Flux<Message> loadAllMessages();
+    Flux<Message> loadAllMessages(String roomId);
 }
